@@ -1,0 +1,15 @@
+---
+- name: Update apt packages
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 86400
+
+- name: Install jq
+  ansible.builtin.apt:
+    name: "jq"
+    state: present
+# - name: Check miner
+#   shell: echo "miner $NODE_NAME is running"
+#   environment:
+#     NODE_NAME: "{{inventory_hostname}}"
+#   when: inventory_hostname in miners.split(',')
