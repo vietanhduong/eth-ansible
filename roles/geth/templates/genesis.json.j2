@@ -1,0 +1,26 @@
+{
+  "config": {
+    "chainId": {{ networkid }},
+    "homesteadBlock": 0,
+    "eip150Block": 0,
+    "eip155Block": 0,
+    "eip158Block": 0,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "petersburgBlock": 0,
+    "istanbulBlock": 0,
+    "berlinBlock": 0,
+    "clique": {
+      "period": {{ block_period | default(5) }},
+      "epoch": {{ block_epoch | default(30000) }}
+    }
+  },
+  "difficulty": "1",
+  "gasLimit": "{{ gas_limit | default(8000000) }}",
+  "extradata": "{{ extra_data | default('0x000000')}}",
+  "alloc": {
+    {% for account in geth_accounts %}
+    "{{ account.address }}": { "balance": "{{ account.balance | default(10000000000) }}" }{{ "," if not loop.last }}
+    {% endfor %}
+  }
+}

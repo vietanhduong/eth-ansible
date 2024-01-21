@@ -13,11 +13,15 @@ test:
 		$(ANSIBLE_FLAGS) \
 		-e 'node1_ssh_port=$(shell $(VAGRANT) port --guest 22 node1)' \
 		-e 'node2_ssh_port=$(shell $(VAGRANT) port --guest 22 node2)' \
-		-e 'target=$(TARGET_HOSTS)' \
-		-e 'miners=$(MINERS)' \
+		-e 'target=$(TARGET_HOSTS)'
 
+.PHONY: start-vagrant
 start-vagrant:
-ifeq ($(DESTROY),true)
-	$(VAGRANT) destroy -f || true
+ifeq ($(VG_DESTROY),true)
+	$(MAKE) destroy-vagrant
 endif
 	$(VAGRANT) up
+
+.PHONY: destroy-vagrant
+destroy-vagrant:
+	$(VAGRANT) destroy -f

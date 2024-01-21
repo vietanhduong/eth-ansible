@@ -1,0 +1,35 @@
+---
+geth_version: 1.13.9
+datadir: /mnt/geth
+networkid: 1337
+geth_accounts:
+  - node: node1
+    create: true
+    # address must be speicifed if password is not empty
+    address: ""
+    # password must be speicifed if address is not empty. If create is true and password
+    # is empty, a random password will be generated.
+    password: ""
+    balance: 10000000000000000 # optional
+    # secret_file is required if you want to use a pre-generated account
+    # this field only available when create is false
+    secret_file:
+      # the output filename will be placed in the datadir/keystore directory
+      name: ""
+      # the content of the secret file in JSON format
+      content: ""
+  - node: node2
+    create: true
+    # address must be speicifed if password is not empty
+    address: ""
+    # password must be speicifed if address is not empty. If create is true and password
+    # is empty, a random password will be generated.
+    password: ""
+    balance: 10000000000000000 # optional
+    # secret_file is required if you want to use a pre-generated account
+    # this field only available when create is false
+    secret_file:
+      # the output filename will be placed in the datadir/keystore directory
+      name: ""
+      # the content of the secret file in JSON format
+      content: ""

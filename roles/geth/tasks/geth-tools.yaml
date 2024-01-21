@@ -1,0 +1,53 @@
+---
+- name: Verify require binaries
+  command: "which {{item}}"
+  register: verify
+  ignore_errors: true
+  loop:
+    - geth
+    - bootnode
+
+- name: Check geth version
+  args:
+    executable: /bin/bash
+  # FIXME: this has a limitation that if geth_version is specified version,
+  # and less than the current version, if will treat that the current version
+  # is newer than the required version, and no update will be performed.
+  shell: |
+    CURRENT_VERSION="$(geth --version | awk '{print $3}' | sed 's/-.*//g')"
+    if [[ $(echo -e "$REQUIRED_VERSION\n$CURRENT_VERSION" | sort -V | head -n1) != $REQUIRED_VERSION ]]; then
+      echo "Current Version: $CURRENT_VERSION"
+      echo "Required Version: $REQUIRED_VERSION"
+      exit 1
+    fi
+  register: geth_version
+  ignore_errors: true
+  when: verify.results[0].rc == 0
+  environment:
+    REQUIRED_VERSION: "{{geth_version}}"
+
+- name: Should update geth
+  set_fact:
+    should_update_geth: "{{ (verify.results | selectattr('rc', 'equalto', 1) | list | length > 0) or geth_version.rc != 0 }}"
+
+- name: Copy arch_map.json
+  copy:
+    src: arch_map.json
+    dest: /tmp/arch_map.json
+  when: should_update_geth
+
+- name: Install geth-tools
+  args:
+    executable: /bin/bash
+  environment:
+    TARGET_OS: "{{ansible_system|lower}}"
+    TARGET_ARCH: "{{ansible_architecture}}"
+  shell: |
+    TMP_DIR=$(mktemp -d)
+    TARGET_ARCH=$(jq -r ".[\"$TARGET_ARCH\"]" "/tmp/arch_map.json")
+    curl -SL https://gethstore.blob.core.windows.net/builds/geth-alltools-${TARGET_OS}-${TARGET_ARCH}-1.13.9-dd938d10.tar.gz | \
+      tar -xvz -C $TMP_DIR --strip-components=1 && \
+      rm -f COPYING && \
+      sudo mv $TMP_DIR/* /usr/local/bin && \
+      rm -rf $TMP_DIR
+  when: should_update_geth

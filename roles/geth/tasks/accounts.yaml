@@ -1,0 +1,67 @@
+---
+- name: Create accounts
+  args:
+    executable: /bin/bash
+  shell: |
+    if [[ ! -d $DATADIR ]]; then
+      mkdir -p $DATADIR
+    fi
+    if [[ -z "$PASSWORD" ]] && [[ -z "$(cat $DATADIR/password.txt || echo "")" ]]; then
+      echo "$(openssl rand -hex 12)" > $DATADIR/password.txt
+    else
+      echo "$PASSWORD" > $DATADIR/password.txt
+    fi
+
+    if [[ ! -f $DATADIR/keystore/UTC* ]]; then
+      geth --datadir $DATADIR account new --password $DATADIR/password.txt
+    fi
+  register: accounts
+  loop: "{{ geth_accounts }}"
+  when: item.create and item.node == inventory_hostname
+  environment:
+    NODE_NAME: "{{inventory_hostname}}"
+    DATADIR: "{{datadir}}"
+    PASSWORD: "{{item.password}}"
+    ADDRESS: "{{item.address}}"
+
+- name: Handle accounts secret file
+  args:
+    executable: /bin/bash
+  shell: |
+    if [[ ! -d $DATADIR/keystore ]]; then
+      mkdir -p $DATADIR/keystore
+    fi
+    echo "$CONTENT" > $DATADIR/keystore/$FILENAME
+  loop: "{{ geth_accounts }}"
+  when: >
+    item.secret_file is defined and
+    item.node == inventory_hostname and
+    not item.create and
+    item.secret_file.name != "" and
+    item.secret_file.content != ""
+  environment:
+    NODE_NAME: "{{inventory_hostname}}"
+    DATADIR: "{{datadir}}"
+    FILENAME: "{{ item.secret_file.name }}"
+    CONTENT: "{{ item.secret_file.content }}"
+
+- name: Make final accounts
+  args:
+    executable: /bin/bash
+  register: final_accounts
+  # This step will echo the account (item) in JSON format to the stdout
+  shell: |
+    ACCOUNT=$(cat <<EOF
+    {
+      "address": "{{item.address}}",
+      "balance": "{{item.balance}}"
+    }
+    EOF
+    )
+  when: item.node == inventory_hostname
+  loop: "{{ geth_accounts }}"
+  environment:
+    NODE_NAME: "{{inventory_hostname}}"
+    DATADIR: "{{datadir}}"
+    FILENAME: "{{ item.secret_file.name }}"
+    CONTENT: "{{ item.secret_file.content }}"

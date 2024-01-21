@@ -2,3 +2,4 @@
 - hosts: '{{target|default("nodes")}}'
   roles:
     - role: common
+    - role: geth
