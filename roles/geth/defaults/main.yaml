@@ -1,9 +1,13 @@
 ---
 geth_version: 1.13.9
+# By default managed by systemd. If set, will run as docker container
+run_as_docker: false
 datadir: /mnt/geth
 networkid: 1337
 geth_accounts:
-  - node: node1
+  # name is used to identify the account and must be unique
+  - name: default
+    node: node1
     create: true
     # address must be speicifed if password is not empty
     address: ""
@@ -11,14 +15,11 @@ geth_accounts:
     # is empty, a random password will be generated.
     password: ""
     balance: 10000000000000000 # optional
-    # secret_file is required if you want to use a pre-generated account
-    # this field only available when create is false
-    secret_file:
-      # the output filename will be placed in the datadir/keystore directory
-      name: ""
-      # the content of the secret file in JSON format
-      content: ""
-  - node: node2
+    # the content of the secret file in JSON format
+    secret_content: ""
+  # name is used to identify the account and must be unique
+  - name: default
+    node: node2
     create: true
     # address must be speicifed if password is not empty
     address: ""
@@ -26,10 +27,5 @@ geth_accounts:
     # is empty, a random password will be generated.
     password: ""
     balance: 10000000000000000 # optional
-    # secret_file is required if you want to use a pre-generated account
-    # this field only available when create is false
-    secret_file:
-      # the output filename will be placed in the datadir/keystore directory
-      name: ""
-      # the content of the secret file in JSON format
-      content: ""
+    # the content of the secret file in JSON format
+    secret_content: ""

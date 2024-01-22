@@ -1,20 +1,9 @@
 ---
-- name: Install geth-tools
-  import_tasks: geth-tools.yaml
+- name: Handle Geth as Service
+  import_tasks: as_service.yaml
+  when: not run_as_docker
 
-- name: Handle accounts
-  import_tasks: accounts.yaml
-
-- name: Shoud generate genesis.json
-  args:
-    executable: /bin/bash
-  register: genesis_check
-  shell: |
-    [[ -f $DATADIR/genesis.json ]] || exit 1
-  ignore_errors: true
-
-- name: Create genesis.json
-  template:
-    src: templates/genesis.json.j2
-    dest: "{{datadir}}/genesis.json"
-  when: genesis_check.rc != 0
+- name: Handle Geth as Docker
+  debug:
+    msg: "Not implemented yet"
+  when: run_as_docker
