@@ -48,3 +48,9 @@ bootnode_ip_addr: ""
 # Wipe variables
 wipe: false
 wipe_target: "data,genesis"
+
+# Lighthouse variables
+## lighthouse_enabled is a boolean value to enable/disable lighthouse
+lighthouse_enabled: false
+## lighthouse_version is the version of lighthouse to install
+lighthouse_version: "4.5.0"

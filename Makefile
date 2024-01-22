@@ -9,6 +9,8 @@ TARGET_HOSTS ?= all
 WIPE ?= false
 WIPE_TARGET ?= all
 RUN_AS_DOCKER ?= false
+LIGHTHOUSE ?= true
+
 
 ifneq ($(WIPE),true)
 	override WIPE=false
@@ -16,6 +18,10 @@ endif
 
 ifneq ($(RUN_AS_DOCKER),true)
 	override RUN_AS_DOCKER=false
+endif
+
+ifneq ($(LIGHTHOUSE),true)
+	override LIGHTHOUSE=false
 endif
 
 .PHONY: test
@@ -30,6 +36,7 @@ test:
 		-e '{"wipe": $(WIPE)}' \
 		-e 'wipe_target=$(WIPE_TARGET)' \
 		-e '{"run_as_docker": $(RUN_AS_DOCKER)}' \
+		-e '{"lighthouse_enabled": $(LIGHTHOUSE)}' \
 		-e 'target=$(TARGET_HOSTS)'
 
 .PHONY: start-vagrant

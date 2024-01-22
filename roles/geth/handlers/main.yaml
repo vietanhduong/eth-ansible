@@ -12,3 +12,10 @@
     daemon_reload: true
     enabled: true
     state: restarted
+
+- name: restart lighthouse
+  systemd:
+    name: lighthouse
+    daemon_reload: true
+    enabled: true
+    state: restarted

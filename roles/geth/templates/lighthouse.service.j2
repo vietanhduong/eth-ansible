@@ -1,0 +1,34 @@
+[Unit]
+Description=Lighthouse
+{% if run_as_docker -%}
+Wants=docker.service
+{% endif %}
+
+[Service]
+SyslogIdentifier=lighthouse
+User=root
+Group=root
+{% if run_as_docker -%}
+ExecStart=/usr/bin/docker run --rm \
+  --name bootnode \
+  --network host \
+  -v {{datadir}}/bootnode:/root/bootnode \
+  ethereum/client-go:alltools-v{{geth_version}} \
+  bootnode --nodekey /root/bootnode/boot.key -nat extip:{{bootnode_ip_addr}}
+{% else -%}
+ExecStart=/usr/local/bin/lighthouse bn \
+  --testnet-dir {{datadir}}/geth \
+  --enable-private-discovery \
+  --staking \
+  --enn-address {{bootnode_ip_addr}} \
+  --enr-udp-port 30303 \
+  --enr-tcp-port 30303 \
+  --disable-packet-filter \
+  --execution-endpoint http://localhost:8551 \
+  --execution-jwt {{datadir}}/jwtsecret \
+  --datadir {{datadir}}/lighthouse \
+  --http
+{% endif %}
+
+[Install]
+WantedBy=default.target
