@@ -21,7 +21,12 @@
     owner: root
     group: root
     mode: 0644
+  register: bootnode_service
+
+- name: Trigger restart bootnode
+  command: /bin/true
   notify: restart bootnode
+  when: not bootkey_check.stat.exists or bootnode_service is changed
 
 - name: Get Bootnode Address
   command: bootnode -nodekey $DATADIR/bootnode/boot.key -writeaddress

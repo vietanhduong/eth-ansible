@@ -60,7 +60,7 @@
     owner: root
     group: root
     mode: 0644
-  notify: restart geth
+  register: geth_service
   vars:
     # mine: return true if there is a miner account on this current host, otherwise return false
     mine: "{{geth_accounts_final | selectattr('miner', 'defined') | selectattr('miner', 'equalto', true) | selectattr('node', 'equalto', inventory_hostname) | list | count > 0}}"
@@ -68,3 +68,8 @@
     account: "{{(geth_accounts_final | selectattr('miner', 'defined') | selectattr('miner', 'equalto', true) | selectattr('node', 'equalto', inventory_hostname) | list | first) if mine else (geth_accounts_final | selectattr('node', 'equalto', inventory_hostname) | first)}}"
     # bootnode_addr: return the bootnode address fact in the bootdnode host
     bootnode_addr: "{{hostvars[bootnode_on_host]['bootnode_addr']}}"
+
+- name: Trigger restart geth
+  command: /bin/true
+  when: (wipe|default(false)|bool) or geth_service is changed
+  notify: restart geth

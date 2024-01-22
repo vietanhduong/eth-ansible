@@ -10,8 +10,6 @@ WIPE ?= false
 WIPE_TARGET ?= all
 RUN_AS_DOCKER ?= false
 
-
-
 ifneq ($(WIPE),true)
 	override WIPE=false
 endif

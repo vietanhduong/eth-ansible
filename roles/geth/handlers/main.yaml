@@ -4,8 +4,11 @@
     name: bootnode
     daemon_reload: true
     state: restarted
+    enabled: true
+
 - name: restart geth
   systemd:
     name: geth
     daemon_reload: true
+    enabled: true
     state: restarted
