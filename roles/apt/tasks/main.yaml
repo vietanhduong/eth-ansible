@@ -1,0 +1,56 @@
+---
+- name: Manage apt sources file
+  template:
+    src: sources.list.j2
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Update apt metadata
+  apt:
+    update_cache: yes
+
+- name: Remove unused package
+  apt:
+    autoremove: yes
+
+- name: Upgrade installed packages
+  apt:
+    upgrade: dist
+    update_cache: no
+  when: apt_upgrade
+
+- name: Ensure that apt https repo is supported
+  apt:
+    name: apt-transport-https
+    state: present
+
+- name: Install software-properties-common which provides scripts to for adding and removing PPA
+  apt:
+    name: software-properties-common
+    state: present
+
+- name: Install required packages
+  apt:
+    name: "{{item}}"
+    state: present
+  loop:
+    - jq
+    - curl
+    - tar
+    - git
+    - libssl-dev
+
+- name: Find all .save files in apt sources directory
+  find:
+    path: /etc/apt/sources.list.d
+    file_type: file
+    pattern: "*.save"
+  register: apt_sources_save
+
+- name: Delete .save file(s) in apt sources directory
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ apt_sources_save.files }}"
