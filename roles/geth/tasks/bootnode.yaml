@@ -22,8 +22,6 @@
     group: root
     mode: 0644
   notify: restart bootnode
-  vars:
-    run_as_docker: "{{run_as_docker | default(false) | bool}}"
 
 - name: Get Bootnode Address
   command: bootnode -nodekey $DATADIR/bootnode/boot.key -writeaddress

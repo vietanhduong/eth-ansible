@@ -68,4 +68,3 @@
     account: "{{(geth_accounts_final | selectattr('miner', 'defined') | selectattr('miner', 'equalto', true) | selectattr('node', 'equalto', inventory_hostname) | list | first) if mine else (geth_accounts_final | selectattr('node', 'equalto', inventory_hostname) | first)}}"
     # bootnode_addr: return the bootnode address fact in the bootdnode host
     bootnode_addr: "{{hostvars[bootnode_on_host]['bootnode_addr']}}"
-    run_as_docker: "{{run_as_docker | default(false) | bool}}"
