@@ -17,7 +17,7 @@
   },
   "difficulty": "1",
   "gasLimit": "{{ gas_limit | default(8000000) }}",
-  "extradata": "{{ extra_data | default('0x000000')}}",
+  "extradata": "{{ extradata | default('0x000000')}}",
   "alloc": {
   {% for account in geth_accounts_final %}
   "{{ account.address }}": {"balance": "{{ account.balance | default(10000000000) }}"}{{ "," if not loop.last }}

@@ -9,7 +9,7 @@ all:
       ansible_become: True
       ansible_python_interpreter: /usr/bin/python3
       # custom vars
-      miner: true
+      bootnode: true
     node2:
       ansible_host: 127.0.0.1
       ansible_port: "{{node2_ssh_port}}"
@@ -19,4 +19,4 @@ all:
       ansible_become: True
       ansible_python_interpreter: /usr/bin/python3
       # custom vars
-      miner: false
+      bootnode: false

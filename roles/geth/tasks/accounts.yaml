@@ -83,7 +83,7 @@
     ADDRESS=$(jq -r '.address' $KEYSTORE_FILE)
 
     ACCOUNT=$(cat <<EOF
-    {"address": "$ADDRESS", "balance": "{{item.balance|default(0)}}"}
+    {"address": "$ADDRESS", "balance": "{{item.balance|default(0)}}", "miner": $MINER}
     EOF
     )
     echo "$ACCOUNT"
@@ -92,12 +92,18 @@
   environment:
     DATADIR: "{{datadir}}"
     KEYSTORE_NAME: "{{item.name}}"
+    MINER: "{{item.miner|default(false)|lower}}"
 
 - name: Set temporary fact
   set_fact:
     _geth_accounts_final: "{{ final_accounts.results | selectattr('stdout', 'defined') | map(attribute='stdout') | map('from_json') | list }}"
 
-- name: Final accounts
+- name: Set get_final_accounts
   set_fact:
     geth_accounts_final: "{{ ansible_play_hosts | map('extract', hostvars, '_geth_accounts_final') | flatten | list }}"
+  run_once: true
+
+- name: Set extradata
+  set_fact:
+    extradata: "{{ '0x0000000000000000000000000000000000000000000000000000000000000000%s0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'| format(geth_accounts_final | selectattr('miner', 'defined') | selectattr('miner', 'equalto', true) | map(attribute='address') | join('')) }}"
   run_once: true

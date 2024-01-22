@@ -17,6 +17,8 @@ geth_accounts:
     balance: 10000000000000000 # optional
     # the content of the secret file in JSON format
     secret_content: ""
+    # miner is optional, if set to true, the account will be used as miner
+    miner: true
   # name is used to identify the account and must be unique
   - name: default
     node: node2
@@ -29,3 +31,5 @@ geth_accounts:
     balance: 10000000000000000 # optional
     # the content of the secret file in JSON format
     secret_content: ""
+    # miner is optional, if set to true, the account will be used as miner
+    miner: true
