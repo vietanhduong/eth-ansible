@@ -1,0 +1,54 @@
+[Unit]
+Description=Geth Node
+{% if run_as_docker -%}
+Wants=docker.service
+{% endif %}
+
+[Service]
+SyslogIdentifier=geth
+User=root
+Group=root
+{% if run_as_docker -%}
+ExecStart=/usr/bin/docker run --rm \
+      --name geth \
+      --network host \
+      -v {{datadir}}/geth:/root/ethereum/geth \
+      -v {{datadir}}/keystore:/root/ethereum/keystore \
+      -v {{datadir}}/jwtsecret:/root/ethereum/jwtsecret \
+      -v {{datadir}}/{{account.name}}_password.txt:/root/ethereum/password.txt \
+      ethereum/client-go:alltools-v{{geth_version}} \
+      geth --datadir /root/ethereum \
+      --allow-insecure-unlock \
+      --http --http.addr 0.0.0.0 --http.port 8545 --http.corsdomain "*" --http.vhosts "*" \
+      --http.api eth,net \
+      --bootnodes enode://{{bootnode_addr}}@{{bootnode_ip_addr}}:30303 \
+      --networkid {{networkid}} \
+      --unlock {{"0x%s"|format(account.address)}} \
+      --password /root/ethereum/password.txt \
+{% if mine -%}
+      --mine --miner.etherbase {{"0x%s"|format(account.address)}} \
+{% endif %}
+      --authrpc.addr localhost \
+      --authrpc.port 8551 \
+      --authrpc.vhosts localhost \
+      --authrpc.jwtsecret /root/ethereum/jwtsecret
+{% else -%}
+ExecStart=/usr/local/bin/geth \
+      --datadir {{datadir}} \
+      --port 30303 \
+      --bootnodes enode://{{bootnode_addr}}@{{bootnode_ip_addr}}:30303 \
+      --allow-insecure-unlock \
+      --networkid {{networkid}} \
+      --unlock {{"0x%s"|format(account.address)}} \
+      --password {{datadir}}/{{account.name}}_password.txt \
+{% if mine -%}
+      --mine --miner.etherbase {{"0x%s"|format(account.address)}} \
+{% endif %}
+      --authrpc.addr localhost \
+      --authrpc.port 8551 \
+      --authrpc.vhosts localhost \
+      --authrpc.jwtsecret {{datadir}}/jwtsecret
+{% endif %}
+
+[Install]
+WantedBy=default.target

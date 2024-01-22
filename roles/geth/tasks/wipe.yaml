@@ -1,0 +1,18 @@
+---
+- name: Stop Geth
+  systemd:
+    name: geth
+    state: stopped
+  ignore_errors: true
+
+- name: Wipe Geth data directory
+  file:
+    path: "{{datadir}}/geth"
+    state: absent
+  when: wipe_target is defined and ('data' in wipe_target.split(',') or wipe_target == 'all')
+
+- name: Remove Genesis file
+  file:
+    path: "{{datadir}}/genesis.json"
+    state: absent
+  when: wipe_target is defined and ('genesis' in wipe_target.split(',') or wipe_target == 'all')

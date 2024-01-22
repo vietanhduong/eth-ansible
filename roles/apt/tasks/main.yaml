@@ -51,6 +51,6 @@
 
 - name: Delete .save file(s) in apt sources directory
   file:
-    path: "{{ item.path }}"
+    path: "{{item.path}}"
     state: absent
-  with_items: "{{ apt_sources_save.files }}"
+  with_items: "{{apt_sources_save.files}}"

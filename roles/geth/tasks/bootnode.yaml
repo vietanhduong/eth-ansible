@@ -1,0 +1,36 @@
+---
+- name: Check if boot key file exists
+  stat:
+    path: "{{datadir}}/bootnode/boot.key"
+  register: bootkey_check
+
+- name: Generate bootnode key
+  args:
+    executable: /bin/bash
+  shell: |
+    mkdir -p $(dirname $BOOTKEY_PATH) && bootnode -genkey $BOOTKEY_PATH
+  environment:
+    BOOTKEY_PATH: "{{datadir}}/bootnode/boot.key"
+  register: bootnode_key
+  when: not bootkey_check.stat.exists
+
+- name: Render Bootnode template
+  template:
+    src: templates/bootnode.service.j2
+    dest: /etc/systemd/system/bootnode.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart bootnode
+  vars:
+    run_as_docker: "{{run_as_docker | default(false) | bool}}"
+
+- name: Get Bootnode Address
+  command: bootnode -nodekey $DATADIR/bootnode/boot.key -writeaddress
+  environment:
+    DATADIR: "{{datadir}}"
+  register: bootnode_address
+
+- name: Set bootnode_address
+  set_fact:
+    bootnode_addr: "{{bootnode_address.stdout_lines[0]}}"

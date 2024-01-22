@@ -1,9 +1,71 @@
 ---
-- name: Handle Geth as Service
-  import_tasks: as_service.yaml
-  when: not run_as_docker
+- name: Install geth-tools
+  import_tasks: geth-tools.yaml
 
-- name: Handle Geth as Docker
-  debug:
-    msg: "Not implemented yet"
-  when: run_as_docker
+- name: Handle accounts
+  import_tasks: accounts.yaml
+
+- name: Handle wipe
+  import_tasks: wipe.yaml
+  when: wipe | default(false) | bool
+
+- name: Shoud generate genesis.json
+  stat:
+    path: "{{datadir}}/genesis.json"
+  register: genesis_check
+
+- name: Create genesis.json
+  template:
+    src: templates/genesis.json.j2
+    dest: "{{datadir}}/genesis.json"
+  when: not genesis_check.stat.exists
+
+- name: Initialize genesis.json
+  command: geth init --datadir "{{datadir}}" "{{datadir}}/genesis.json"
+  when: not genesis_check.stat.exists
+
+- name: Handle bootnode
+  import_tasks: bootnode.yaml
+  when: bootnode_on_host is defined and bootnode_on_host == inventory_hostname
+
+- name: Ensure bootnode address
+  shell: |
+    if [[ -z "$BOOTNODE_ADDRESS" ]]; then
+      echo "No bootnodes are specified" >&2 && exit 1
+    fi
+  args:
+    executable: /bin/bash
+  environment:
+    BOOTNODE_ADDRESS: "{{bootnode_addr | default('')}}"
+  run_once: true
+
+- name: Check if jwtsecret file exists
+  stat:
+    path: "{{datadir}}/jwtsecret"
+  register: jwtsecret_check
+
+- name: Generate jwtsecret
+  args:
+    executable: /bin/bash
+  shell: |
+    openssl rand -hex 32 | tr -d "\n" | tee $DATADIR/jwtsecret
+  environment:
+    DATADIR: "{{datadir}}"
+  when: not jwtsecret_check.stat.exists
+
+- name: Handle geth systemd service file
+  template:
+    src: templates/geth.service.j2
+    dest: /etc/systemd/system/geth.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart geth
+  vars:
+    # mine: return true if there is a miner account on this current host, otherwise return false
+    mine: "{{geth_accounts_final | selectattr('miner', 'defined') | selectattr('miner', 'equalto', true) | selectattr('node', 'equalto', inventory_hostname) | list | count > 0}}"
+    # account: return the first miner account on this current host, otherwise return the first account on this current host
+    account: "{{(geth_accounts_final | selectattr('miner', 'defined') | selectattr('miner', 'equalto', true) | selectattr('node', 'equalto', inventory_hostname) | list | first) if mine else (geth_accounts_final | selectattr('node', 'equalto', inventory_hostname) | first)}}"
+    # bootnode_addr: return the bootnode address fact in the bootdnode host
+    bootnode_addr: "{{hostvars[bootnode_on_host]['bootnode_addr']}}"
+    run_as_docker: "{{run_as_docker | default(false) | bool}}"

@@ -1,0 +1,23 @@
+[Unit]
+Description=Bootnode Service
+{% if run_as_docker -%}
+Wants=docker.service
+{% endif %}
+
+[Service]
+SyslogIdentifier=bootnode
+User=root
+Group=root
+{% if run_as_docker -%}
+ExecStart=/usr/bin/docker run --rm \
+      --name bootnode \
+      --network host \
+      -v {{datadir}}/bootnode:/root/bootnode \
+      ethereum/client-go:alltools-v{{geth_version}} \
+      bootnode --nodekey /root/bootnode/boot.key -nat extip:{{bootnode_ip_addr}}
+{% else -%}
+ExecStart=/usr/local/bin/bootnode -nodekey {{datadir}}/bootnode/boot.key -nat extip:{{bootnode_ip_addr}}
+{% endif %}
+
+[Install]
+WantedBy=default.target

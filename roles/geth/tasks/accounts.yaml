@@ -9,18 +9,20 @@
 
     [[ -d $DATADIR ]] || mkdir -p $DATADIR
 
-    if [[ -z "$PASSWORD" ]] && [[ -z "$(cat $DATADIR/password.txt || echo "")" ]]; then
-      echo "$(openssl rand -hex 12)" > $DATADIR/password.txt
-    else
-      echo "$PASSWORD" > $DATADIR/password.txt
+    if [[ -z "$PASSWORD" ]] && [[ -z "$(cat "$PASSWORD_FILE" || echo "")" ]]; then
+      echo "$(openssl rand -hex 12)" > $PASSWORD_FILE
+    fi
+
+    if [[ -n "$PASSWORD" ]]; then
+      echo "$PASSWORD" > $PASSWORD_FILE
     fi
 
     if [[ ! -f "$DATADIR/keystore/${KEYSTORE_NAME}.json" ]]; then
-      geth --datadir $DATADIR account new --password $DATADIR/password.txt && \
+      geth --datadir $DATADIR account new --password $PASSWORD_FILE && \
         mv $DATADIR/keystore/UTC* $DATADIR/keystore/${KEYSTORE_NAME}.json
     fi
   register: accounts
-  loop: "{{ geth_accounts }}"
+  loop: "{{geth_accounts}}"
   when: item.create and item.node == inventory_hostname
   environment:
     NODE_NAME: "{{inventory_hostname}}"
@@ -28,6 +30,7 @@
     PASSWORD: "{{item.password}}"
     ADDRESS: "{{item.address}}"
     KEYSTORE_NAME: "{{item.name}}"
+    PASSWORD_FILE: "{{datadir}}/{{item.name}}_password.txt"
 
 - name: Handle accounts secret file
   args:
@@ -56,7 +59,7 @@
 
     [[ -d $DATADIR/keystore ]] || mkdir -p $DATADIR/keystore
     echo "$CONTENT" > "$DATADIR/keystore/${KEYSTORE_NAME}.json"
-  loop: "{{ geth_accounts }}"
+  loop: "{{geth_accounts}}"
   when: >
     item.secret_file is defined and
     item.node == inventory_hostname and
@@ -66,9 +69,9 @@
   environment:
     NODE_NAME: "{{inventory_hostname}}"
     DATADIR: "{{datadir}}"
-    KEYSTORE_NAME: "{{ item.name }}"
+    KEYSTORE_NAME: "{{item.name}}"
     PASSWORD: "{{item.password}}"
-    CONTENT: "{{ item.secret_file.content }}"
+    CONTENT: "{{item.secret_file.content}}"
 
 - name: Build final accounts
   args:
@@ -83,27 +86,34 @@
     ADDRESS=$(jq -r '.address' $KEYSTORE_FILE)
 
     ACCOUNT=$(cat <<EOF
-    {"address": "$ADDRESS", "balance": "{{item.balance|default(0)}}", "miner": $MINER}
+    {
+      "address": "$ADDRESS",
+      "balance": "{{item.balance|default(0)}}",
+      "miner": $MINER,
+      "name": "$KEYSTORE_NAME",
+      "node": "$NODE_NAME"
+    }
     EOF
     )
     echo "$ACCOUNT"
   when: item.node == inventory_hostname
-  loop: "{{ geth_accounts }}"
+  loop: "{{geth_accounts}}"
   environment:
+    NODE_NAME: "{{inventory_hostname}}"
     DATADIR: "{{datadir}}"
     KEYSTORE_NAME: "{{item.name}}"
     MINER: "{{item.miner|default(false)|lower}}"
 
 - name: Set temporary fact
   set_fact:
-    _geth_accounts_final: "{{ final_accounts.results | selectattr('stdout', 'defined') | map(attribute='stdout') | map('from_json') | list }}"
+    _geth_accounts_final: "{{final_accounts.results | selectattr('stdout', 'defined') | map(attribute='stdout') | map('from_json') | list}}"
 
 - name: Set get_final_accounts
   set_fact:
-    geth_accounts_final: "{{ ansible_play_hosts | map('extract', hostvars, '_geth_accounts_final') | flatten | list }}"
+    geth_accounts_final: "{{ansible_play_hosts | map('extract', hostvars, '_geth_accounts_final') | flatten | list}}"
   run_once: true
 
 - name: Set extradata
   set_fact:
-    extradata: "{{ '0x0000000000000000000000000000000000000000000000000000000000000000%s0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'| format(geth_accounts_final | selectattr('miner', 'defined') | selectattr('miner', 'equalto', true) | map(attribute='address') | join('')) }}"
+    extradata: "{{'0x0000000000000000000000000000000000000000000000000000000000000000%s0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'| format(geth_accounts_final | selectattr('miner', 'defined') | selectattr('miner', 'equalto', true) | map(attribute='address') | join(''))}}"
   run_once: true

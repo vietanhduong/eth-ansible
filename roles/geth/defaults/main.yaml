@@ -1,12 +1,17 @@
 ---
-geth_version: 1.13.9
-# By default managed by systemd. If set, will run as docker container
+# Comon variables
 run_as_docker: false
+
+# Geth variables
+## Geth version
+geth_version: "1.13.9"
+
 datadir: /mnt/geth
 networkid: 1337
+
 geth_accounts:
   # name is used to identify the account and must be unique
-  - name: default
+  - name: default # required account
     node: node1
     create: true
     # address must be speicifed if password is not empty
@@ -20,7 +25,7 @@ geth_accounts:
     # miner is optional, if set to true, the account will be used as miner
     miner: true
   # name is used to identify the account and must be unique
-  - name: default
+  - name: default # required account
     node: node2
     create: true
     # address must be speicifed if password is not empty
@@ -32,4 +37,14 @@ geth_accounts:
     # the content of the secret file in JSON format
     secret_content: ""
     # miner is optional, if set to true, the account will be used as miner
-    miner: true
+    miner: false
+
+# Bootnode variables
+## bootnode is the hostname of the bootnode
+bootnode_on_host: "node1"
+## bootnode_ip_addr is the IP address of the bootnode. This ip must be accessible from all nodes. Required
+bootnode_ip_addr: ""
+
+# Wipe variables
+wipe: false
+wipe_target: "data,genesis"

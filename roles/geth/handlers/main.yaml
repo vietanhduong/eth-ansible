@@ -1,0 +1,11 @@
+---
+- name: restart bootnode
+  systemd:
+    name: bootnode
+    daemon_reload: true
+    state: restarted
+- name: restart geth
+  systemd:
+    name: geth
+    daemon_reload: true
+    state: restarted

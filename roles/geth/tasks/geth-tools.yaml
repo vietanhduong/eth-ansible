@@ -20,7 +20,7 @@
       echo "Required Version: $REQUIRED_VERSION"
       exit 1
     fi
-  register: geth_version
+  register: check_geth_version
   ignore_errors: true
   when: verify.results[0].rc == 0
   environment:
@@ -28,7 +28,7 @@
 
 - name: Should update geth
   set_fact:
-    should_update_geth: "{{ (verify.results | selectattr('rc', 'equalto', 1) | list | length > 0) or geth_version.rc != 0 }}"
+    should_update_geth: "{{(verify.results | selectattr('rc', 'equalto', 1) | list | length > 0) or check_geth_version.rc != 0}}"
 
 - name: Copy arch_map.json
   copy:
