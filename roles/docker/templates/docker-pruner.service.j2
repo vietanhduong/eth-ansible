@@ -1,0 +1,12 @@
+[Unit]
+Description=Run docker pruner
+Wants=docker-pruner.timer docker.service
+
+[Service]
+SyslogIdentifier=docker-pruner
+User=root
+Group=root
+ExecStart=/usr/bin/docker system prune -f
+
+[Install]
+WantedBy=default.target

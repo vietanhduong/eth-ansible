@@ -1,0 +1,10 @@
+---
+- name: restart docker-pruner timer
+  systemd:
+    name: docker-pruner.timer
+    state: restarted
+
+- name: restart docker
+  systemd:
+    name: docker
+    state: restarted

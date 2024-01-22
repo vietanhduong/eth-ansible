@@ -1,0 +1,9 @@
+[Unit]
+Description=Docker prune timer
+
+[Timer]
+OnUnitActiveSec=24h
+OnBootSec=30m
+
+[Install]
+WantedBy=timers.target

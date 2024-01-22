@@ -2,4 +2,5 @@
 - hosts: '{{target|default("nodes")}}'
   roles:
     - role: apt
+    - role: docker
     - role: geth
