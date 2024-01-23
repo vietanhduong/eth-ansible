@@ -73,7 +73,3 @@
   command: /bin/true
   when: (wipe|default(false)|bool) or geth_service is changed
   notify: restart geth
-
-- name: Handle lighthouse
-  import_tasks: lighthouse.yaml
-  when: lighthouse_enabled | default(false) | bool
