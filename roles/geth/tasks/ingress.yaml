@@ -12,7 +12,7 @@
 
 - name: Create cert file
   copy:
-    content: "{{ ingress.base64_cert | b64decode }}"
+    content: "{{ ingress.ssl.base64_cert | b64decode }}"
     dest: "/etc/ssl/certs/{{ ingress.domain_name }}.crt"
     owner: root
     group: root
@@ -27,7 +27,7 @@
 
 - name: Create key file
   copy:
-    content: "{{ ingress.base64_key | b64decode }}"
+    content: "{{ ingress.ssl.base64_key | b64decode }}"
     dest: "/etc/ssl/private/{{ ingress.domain_name }}.key"
     owner: root
     group: root

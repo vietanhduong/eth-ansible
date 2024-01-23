@@ -1,6 +1,6 @@
 upstream http_backend {
-{% if (ingress.lb_method | default("")) %}
-  {{ lb_method }};
+{% if (ingress.lb_method|default("")) %}
+  {{ ingress.lb_method }};
 {% endif %}
 {% for upstream in geth_nodes %}
   server {{ upstream }}:8545;
@@ -32,7 +32,7 @@ server {
 server {
     listen		443 ssl;
     listen [::]:443 ssl;
-    server_name {{ geth_domain.name }};
+    server_name {{ ingress.domain_name }};
 
     ssl_certificate /etc/ssl/certs/{{ ingress.domain_name }}.crt;
     ssl_certificate_key /etc/ssl/private/{{ ingress.domain_name }}.key;

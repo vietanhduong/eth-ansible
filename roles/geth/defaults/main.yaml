@@ -54,10 +54,10 @@ wipe_target: "data,genesis"
 # Ingress varialbes
 ingress:
   # lb_method nginx load-balance method. Details: https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/
-  lb_method: ""
+  lb_method: "least_conn"
   domain_name: geth.example.com
   ssl:
     # when enabled is true, cert and key must be specified
     enabled: false
-    base64_cert: ""
-    base64_key: ""
+    # base64_cert: ""
+    # base64_key: ""
