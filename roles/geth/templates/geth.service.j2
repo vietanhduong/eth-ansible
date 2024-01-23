@@ -35,9 +35,10 @@ ExecStart=/usr/bin/docker run --rm \
 {% else -%}
 ExecStart=/usr/local/bin/geth \
       --datadir {{datadir}} \
-      --port 30303 \
-      --bootnodes enode://{{bootnode_addr}}@{{bootnode_ip_addr}}:30303 \
       --allow-insecure-unlock \
+      --http --http.addr 0.0.0.0 --http.port 8545 --http.corsdomain "*" --http.vhosts "*" \
+      --http.api eth,net \
+      --bootnodes enode://{{bootnode_addr}}@{{bootnode_ip_addr}}:30303 \
       --networkid {{networkid}} \
       --unlock {{"0x%s"|format(account.address)}} \
       --password {{datadir}}/{{account.name}}_password.txt \

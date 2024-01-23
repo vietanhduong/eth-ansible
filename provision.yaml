@@ -3,4 +3,5 @@
   roles:
     - role: apt
     - role: docker
+    - role: nginx
     - role: geth

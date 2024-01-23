@@ -19,3 +19,6 @@
     daemon_reload: true
     enabled: true
     state: restarted
+
+- name: nginx reload
+  command: nginx -s reload

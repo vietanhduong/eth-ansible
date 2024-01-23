@@ -1,0 +1,19 @@
+---
+nginx_worker_processes: "auto"
+nginx_events_worker_connections: 32768
+nginx_worker_rlimit_nofile: 32768
+
+nginx_http_sendfile: "on"
+nginx_http_tcp_nopush: "on"
+nginx_http_tcp_nodelay: "on"
+nginx_http_keepalive_timeout: 65
+nginx_http_types_hash_max_size: 2048
+nginx_client_max_body_size: 5M
+
+nginx_ssl_protocols: "TLSv1.1 TLSv1.2"
+nginx_ssl_prefer_server_ciphers: "on"
+
+nginx_http_gzip: "on"
+nginx_http_gzip_disable: "msie6"
+nginx_http_gzip_comp_level: 1
+nginx_enable_request_body_debug_log: false

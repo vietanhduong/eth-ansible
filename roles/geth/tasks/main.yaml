@@ -16,7 +16,7 @@
 
 - name: Create genesis.json
   template:
-    src: templates/genesis.json.j2
+    src: genesis.json.j2
     dest: "{{datadir}}/genesis.json"
   when: not genesis_check.stat.exists
 
@@ -55,7 +55,7 @@
 
 - name: Handle geth systemd service file
   template:
-    src: templates/geth.service.j2
+    src: geth.service.j2
     dest: /etc/systemd/system/geth.service
     owner: root
     group: root
@@ -73,3 +73,7 @@
   command: /bin/true
   when: (wipe|default(false)|bool) or geth_service is changed
   notify: restart geth
+
+- name: Handle ingress
+  import_tasks: ingress.yaml
+  when: ingress is defined and (ingress.domain_name|default("")) != ""

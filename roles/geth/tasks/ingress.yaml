@@ -1,0 +1,46 @@
+---
+- name: Collect IP addresses
+  set_fact:
+    ip_addresses: "{{ ip_addresses | default([]) + [hostvars[item]['ansible_'~network_interface].ipv4.address] }}"
+  loop: "{{ groups[target] }}"
+
+- name: Ensure cert file
+  stat:
+    path: "/etc/ssl/certs/{{ ingress.domain_name }}.crt"
+  register: cert_check
+  when: ingress.ssl is defined and (ingress.ssl.enabled|default(false))
+
+- name: Create cert file
+  copy:
+    content: "{{ ingress.base64_cert | b64decode }}"
+    dest: "/etc/ssl/certs/{{ ingress.domain_name }}.crt"
+    owner: root
+    group: root
+    mode: 0644
+  when: ingress.ssl is defined and (ingress.ssl.enabled|default(false)) and not cert_check.stat.exists
+
+- name: Ensure key file
+  stat:
+    path: "/etc/ssl/private/{{ ingress.domain_name }}.key"
+  register: key_check
+  when: ingress.ssl is defined and (ingress.ssl.enabled|default(false))
+
+- name: Create key file
+  copy:
+    content: "{{ ingress.base64_key | b64decode }}"
+    dest: "/etc/ssl/private/{{ ingress.domain_name }}.key"
+    owner: root
+    group: root
+    mode: 0644
+  when: ingress.ssl is defined and (ingress.ssl.enabled|default(false)) and not key_check.stat.exists
+
+- name: Ensure geth.config
+  template:
+    src: templates/geth.conf.j2
+    dest: "/etc/nginx/sites-enabled/{{ingress.domain_name}}.conf"
+    owner: root
+    group: root
+    mode: 0644
+  vars:
+    geth_nodes: "{{ ip_addresses }}"
+  notify: nginx reload

@@ -1,0 +1,82 @@
+user www-data;
+worker_processes {{ nginx_worker_processes }};
+pid /run/nginx.pid;
+{% if nginx_worker_rlimit_nofile is defined %}
+worker_rlimit_nofile {{ nginx_worker_rlimit_nofile }};
+{% endif %}
+
+events {
+       worker_connections {{ nginx_events_worker_connections }};
+       # multi_accept on;
+}
+
+http {
+
+	##
+	# Basic Settings
+	##
+
+	sendfile {{ nginx_http_sendfile }};
+	tcp_nopush {{ nginx_http_tcp_nopush }};
+	tcp_nodelay {{ nginx_http_tcp_nodelay }};
+	keepalive_timeout {{ nginx_http_keepalive_timeout }};
+	types_hash_max_size {{ nginx_http_types_hash_max_size }};
+	client_max_body_size {{ nginx_client_max_body_size }};
+	server_tokens off;
+
+	# server_names_hash_bucket_size 64;
+	# server_name_in_redirect off;
+
+	include /etc/nginx/mime.types;
+	default_type application/octet-stream;
+
+	##
+	# SSL Settings
+	##
+
+	ssl_protocols {{ nginx_ssl_protocols }}; # Dropping SSLv3, ref: POODLE
+	ssl_prefer_server_ciphers {{ nginx_ssl_prefer_server_ciphers }};
+	ssl_ciphers HIGH:!aNULL:!eNULL:!MD5:!RC4:!RSA;
+	ssl_session_cache shared:SSL:10m;
+	ssl_session_timeout 10m;
+
+	##
+	# Rate limit Settings
+	##
+
+	limit_req_status 429;
+
+	##
+	# Logging Settings
+	##
+
+{% if nginx_enable_request_body_debug_log %}
+	log_format debug_body '$remote_addr - $remote_user [$time_local] '
+                    '"$request" $status $body_bytes_sent '
+                    '"$http_referer" "$http_user_agent" "$request_body"';
+{% endif %}
+
+	access_log /var/log/nginx/access.log;
+	error_log /var/log/nginx/error.log;
+
+	##
+	# Gzip Settings
+	##
+
+	gzip {{ nginx_http_gzip }};
+	gzip_disable "{{ nginx_http_gzip_disable }}";
+
+	# gzip_vary on;
+	# gzip_proxied any;
+	gzip_comp_level {{ nginx_http_gzip_comp_level }};
+	# gzip_buffers 16 8k;
+	# gzip_http_version 1.1;
+	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+	##
+	# Virtual Host Configs
+	##
+
+	include /etc/nginx/conf.d/*.conf;
+	include /etc/nginx/sites-enabled/*;
+}

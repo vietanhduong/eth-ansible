@@ -1,0 +1,36 @@
+---
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Install passlib library for htpasswd module
+  apt:
+    name: python3-passlib
+    state: present
+
+- name: Ensure nginx.conf
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart nginx
+
+- name: Ensure cloudflare configuration file
+  template:
+    src: cloudflare.conf.j2
+    dest: /etc/nginx/conf.d/cloudflare.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart nginx
+
+- name: Ensure that nginx has started
+  systemd:
+    name: nginx
+    state: started
+    enabled: True

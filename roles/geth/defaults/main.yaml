@@ -1,6 +1,8 @@
 ---
 # Comon variables
 run_as_docker: false
+# network_interface which is used to connect to nodes. Required
+network_interface: enp0s8
 
 # Geth variables
 ## Geth version
@@ -49,8 +51,13 @@ bootnode_ip_addr: ""
 wipe: false
 wipe_target: "data,genesis"
 
-# Lighthouse variables
-## lighthouse_enabled is a boolean value to enable/disable lighthouse
-lighthouse_enabled: false
-## lighthouse_version is the version of lighthouse to install
-lighthouse_version: "4.5.0"
+# Ingress varialbes
+ingress:
+  # lb_method nginx load-balance method. Details: https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/
+  lb_method: ""
+  domain_name: geth.example.com
+  ssl:
+    # when enabled is true, cert and key must be specified
+    enabled: false
+    base64_cert: ""
+    base64_key: ""
